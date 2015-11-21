@@ -1,20 +1,5 @@
 package com.example.acer.wifidirecthostservice;
 
-/*
- * Copyright (C) 2011 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -26,6 +11,7 @@ import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -37,10 +23,8 @@ import com.example.acer.wifidirecthostservice.DeviceListFragment.DeviceActionLis
 
 /**
  * An activity that uses WiFi Direct APIs to discover and connect with available
- * devices. WiFi Direct APIs are asynchronous and rely on callback mechanism
- * using interfaces to notify the application of operation success or failure.
- * The application should also register a BroadcastReceiver for notification of
- * WiFi state related events.
+ * devices. It runs a background service which simulates input touch events based
+ * on input from the server socket connection with the client through WiFi Direct
  */
 public class ServiceActivity extends Activity implements WifiP2pManager.ChannelListener, DeviceActionListener {
 
@@ -53,6 +37,10 @@ public class ServiceActivity extends Activity implements WifiP2pManager.ChannelL
     private final IntentFilter intentFilter = new IntentFilter();
     private WifiP2pManager.Channel channel;
     private BroadcastReceiver receiver = null;
+    DisplayMetrics dm = new DisplayMetrics();
+    int width;
+    int height;
+
 
     /**
      * @param isWifiP2pEnabled the isWifiP2pEnabled to set
@@ -75,8 +63,14 @@ public class ServiceActivity extends Activity implements WifiP2pManager.ChannelL
 
         manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         channel = manager.initialize(this, getMainLooper(), null);
+        getWindowManager().getDefaultDisplay().getMetrics(dm);
+        width = dm.widthPixels;
+        height = dm.heightPixels;
         serviceIntent = new Intent(this, HostService.class);
         serviceIntent.putExtra("PORT", 8988);
+        serviceIntent.putExtra("WIDTH", width);
+        serviceIntent.putExtra("HEIGHT", height);
+
         //startService(serviceIntent);
     }
 
